@@ -243,7 +243,7 @@ pip install numpy opencv-python tensorflow scikit-learn
 
 ## Author
 
-This project was developed by [Your Name]. For inquiries, please contact [Your Email].
+This project was developed by [Lin Hung Chuan]. For inquiries, please contact [sprigga@gmail.com].
 
 ---
 
