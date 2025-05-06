@@ -15,6 +15,8 @@ This README, based on the source code and training record files, explains the pr
 - [How to Use](#how-to-use)
 - [Dependencies](#dependencies)
 - [Frequently Asked Questions](#frequently-asked-questions)
+- [Author](#author)
+- [Contact and Contribution](#contact-and-contribution)
 
 ---
 
@@ -236,6 +238,12 @@ pip install numpy opencv-python tensorflow scikit-learn
 **A:**
 - **Character Set**: Modify the `dict_captcha` dictionary in spas_train_tf2.py and spas_cnn_model_tf2.py, and ensure training labels match it. Adjust the output units of the final Dense layer in the model (currently 21).
 - **Length**: Modify the `digits_in_img` variable in spas_train_tf2.py and spas_cnn_model_tf2.py. This affects image segmentation and prediction loop count.
+
+---
+
+## Author
+
+This project was developed by [Your Name]. For inquiries, please contact [Your Email].
 
 ---
 
