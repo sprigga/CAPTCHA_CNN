@@ -1,75 +1,75 @@
-# CAPTCHA CNN 辨識系統
+# CAPTCHA CNN Recognition System
 
-本專案為一套基於 TensorFlow/Keras 的驗證碼（CAPTCHA）自動辨識系統，包含訓練與預測兩大模組，並支援批次處理。
-本 README 依據原始碼與訓練紀錄檔案，說明專案架構、訓練流程、模型效能與使用方式。
-
----
-
-## 目錄
-
-- [專案結構](#專案結構)
-- [功能說明](#功能說明)
-- [訓練流程與模型效能分析](#訓練流程與模型效能分析)
-- [預測流程](#預測流程)
-- [UML 溝通圖](#uml-溝通圖)
-- [如何使用](#如何使用)
-- [依賴套件](#依賴套件)
-- [常見問題](#常見問題)
+This project is a CAPTCHA (Completely Automated Public Turing test to tell Computers and Humans Apart) automatic recognition system based on TensorFlow/Keras. It includes two main modules, training and prediction, and supports batch processing.
+This README, based on the source code and training record files, explains the project structure, training process, model performance, and usage.
 
 ---
 
-## 專案結構
+## Table of Contents
+
+- [Project Structure](#project-structure)
+- [Functionality Description](#functionality-description)
+- [Training Process and Model Performance Analysis](#training-process-and-model-performance-analysis)
+- [Prediction Process](#prediction-process)
+- [UML Communication Diagram](#uml-communication-diagram)
+- [How to Use](#how-to-use)
+- [Dependencies](#dependencies)
+- [Frequently Asked Questions](#frequently-asked-questions)
+
+---
+
+## Project Structure
 
 ```
 captcha/
-├── spas_train_tf2.py                # 模型訓練主程式
-├── spas_cnn_model_tf2.py            # 模型預測主程式
-├── train_data/                      # 訓練過程紀錄 (json)
-│   ├── Run_Time_2025_05_02_15_53_10_train.json           # 訓練準確率
-│   ├── Run_Time_2025_05_02_15_53_10_train_loss.json      # 訓練損失
-│   ├── Run_Time_2025_05_02_15_53_10_train_lr.json        # 學習率
-│   ├── Run_Time_2025_05_02_15_53_10_validation.json      # 驗證準確率
-│   └── Run_Time_2025_05_02_15_53_10_validation_loss.json # 驗證損失
+├── spas_train_tf2.py                # Main program for model training
+├── spas_cnn_model_tf2.py            # Main program for model prediction
+├── train_data/                      # Training process records (json)
+│   ├── Run_Time_2025_05_02_15_53_10_train.json           # Training accuracy
+│   ├── Run_Time_2025_05_02_15_53_10_train_loss.json      # Training loss
+│   ├── Run_Time_2025_05_02_15_53_10_train_lr.json        # Learning rate
+│   ├── Run_Time_2025_05_02_15_53_10_validation.json      # Validation accuracy
+│   └── Run_Time_2025_05_02_15_53_10_validation_loss.json # Validation loss
 ├── label_captcha_tool-master/
-│   ├── captcha/                     # 訓練用原始驗證碼圖片
-│   └── label.csv                    # 驗證碼標籤
-├── test_captcha/                    # 測試/預測用圖片
-├── logs/                            # TensorBoard 紀錄檔
-├── spas_cnn_model_tf2_v3.h5         # 訓練中儲存的模型 (可能被覆蓋)
-├── best_model_weights.h5            # 驗證準確率最佳的模型權重
-└── spas_cnn_model_tf2_v3_final.h5   # 最終用於預測的模型 (來自 best_model)
+│   ├── captcha/                     # Original CAPTCHA images for training
+│   └── label.csv                    # CAPTCHA labels
+├── test_captcha/                    # Images for testing/prediction
+├── logs/                            # TensorBoard log files
+├── spas_cnn_model_tf2_v3.h5         # Model saved during training (may be overwritten)
+├── best_model_weights.h5            # Model weights with the best validation accuracy
+└── spas_cnn_model_tf2_v3_final.h5   # Final model for prediction (from best_model)
 ```
 
 ---
 
-## 功能說明
+## Functionality Description
 
 - **spas_train_tf2.py**
-  - 讀取 `label_captcha_tool-master/captcha` 中的圖片與 `label.csv` 中的標籤。
-  - 對圖片進行預處理（灰階、分割字元、正規化）。
-  - 將標籤轉換為 One-Hot 編碼。
-  - 分割訓練集與驗證集。
-  - 建立或載入 CNN 模型。
-  - 使用資料增強、EarlyStopping、ReduceLROnPlateau、ModelCheckpoint 等策略進行訓練。
-  - 將訓練過程的指標（Accuracy, Loss, Learning Rate）記錄到 `train_data/` 資料夾。
-  - 儲存驗證準確率最高的模型 (`best_model_weights.h5`)，並將其另存為最終模型 (`spas_cnn_model_tf2_v3_final.h5`)。
+  - Reads images from `label_captcha_tool-master/captcha` and labels from `label.csv`.
+  - Preprocesses images (grayscale, character segmentation, normalization).
+  - Converts labels to One-Hot encoding.
+  - Splits data into training and validation sets.
+  - Builds or loads a CNN model.
+  - Trains the model using data augmentation, EarlyStopping, ReduceLROnPlateau, and ModelCheckpoint strategies.
+  - Records training metrics (Accuracy, Loss, Learning Rate) in the `train_data/` folder.
+  - Saves the model with the highest validation accuracy (`best_model_weights.h5`) and also saves it as the final model (`spas_cnn_model_tf2_v3_final.h5`).
 
 - **spas_cnn_model_tf2.py**
-  - 提供 `processImg` 和 `processBatchImg` 函數對原始驗證碼圖片進行預處理（裁切、灰階、縮放）。
-  - 提供 `cnn_model_predict` 函數對單張預處理後的圖片進行預測。
-  - 提供 `cnn_model_batch_predict` 函數對 `test_captcha` 資料夾中的所有圖片進行批次預測。
-  - 載入 `spas_cnn_model_tf2_v3_final.h5` 模型進行預測。
-  - 輸出每個字元的預測信心度（Softmax 輸出）和最終預測的驗證碼字串。
+  - Provides `processImg` and `processBatchImg` functions to preprocess original CAPTCHA images (cropping, grayscale, scaling).
+  - Provides `cnn_model_predict` function to predict a single preprocessed image.
+  - Provides `cnn_model_batch_predict` function to batch predict all images in the `test_captcha` folder.
+  - Loads the `spas_cnn_model_tf2_v3_final.h5` model for prediction.
+  - Outputs the confidence level (Softmax output) for each character and the final predicted CAPTCHA string.
 
 ---
 
-## 訓練流程與模型效能分析
+## Training Process and Model Performance Analysis
 
-### 訓練流程
+### Training Process
 
-1.  **資料準備**: 從指定路徑讀取圖片和標籤，使用 `sort_key` 確保順序，`split_digits_in_img` 將每張圖分割成 4 個字元並正規化，`to_onehot` 轉換標籤。
-2.  **資料集劃分**: 使用 `train_test_split` 將數據分為 80% 訓練集和 20% 驗證集。
-3.  **模型架構**:
+1.  **Data Preparation**: Reads images and labels from specified paths, ensures order using `sort_key`, splits each image into 4 characters using `split_digits_in_img`, and normalizes them. Converts labels using `to_onehot`.
+2.  **Dataset Splitting**: Splits data into 80% training set and 20% validation set using `train_test_split`.
+3.  **Model Architecture**:
     - `Conv2D(32, (3,3), relu)` + `BatchNormalization`
     - `Conv2D(64, (3,3), relu)` + `BatchNormalization`
     - `MaxPooling2D(2,2)`
@@ -77,35 +77,35 @@ captcha/
     - `Flatten`
     - `Dense(128, relu)` + `BatchNormalization`
     - `Dropout(0.4)`
-    - `Dense(21, softmax)` (對應 `dict_captcha` 中的 20 個字元 + 1 個未知/背景)
-    - 使用 L2 正則化 (`weight_decay = 1e-4`)。
-4.  **訓練策略**:
-    - **優化器**: Adam (初始學習率 0.001)
-    - **損失函數**: Categorical Crossentropy
-    - **資料增強**: `ImageDataGenerator` (旋轉、平移、縮放、剪切)
-    - **回調函數 (Callbacks)**:
-        - `TensorBoard`: 記錄訓練過程供視覺化。
-        - `EarlyStopping`: 監控 `val_accuracy`，若 5 個 epoch 沒有提升則停止訓練，並恢復最佳權重。
-        - `ReduceLROnPlateau`: 監控 `val_accuracy`，若 3 個 epoch 沒有提升則學習率減半。
-        - `ModelCheckpoint`: 儲存 `val_accuracy` 最高的模型權重到 `best_model_weights.h5`。
-    - **Epochs**: 設定為 50，但可能因 EarlyStopping 提前結束。
+    - `Dense(21, softmax)` (corresponding to 20 characters + 1 unknown/background in `dict_captcha`)
+    - Uses L2 regularization (`weight_decay = 1e-4`).
+4.  **Training Strategies**:
+    - **Optimizer**: Adam (initial learning rate 0.001)
+    - **Loss Function**: Categorical Crossentropy
+    - **Data Augmentation**: `ImageDataGenerator` (rotation, translation, scaling, shearing)
+    - **Callbacks**:
+        - `TensorBoard`: Records training process for visualization.
+        - `EarlyStopping`: Monitors `val_accuracy`, stops training if no improvement for 5 epochs, restores best weights.
+        - `ReduceLROnPlateau`: Monitors `val_accuracy`, halves learning rate if no improvement for 3 epochs.
+        - `ModelCheckpoint`: Saves model weights with the highest `val_accuracy` to `best_model_weights.h5`.
+    - **Epochs**: Set to 50 but may end early due to EarlyStopping.
 
-### 訓練紀錄分析 (基於 Run_Time_2025_05_02_15_53_10)
+### Training Record Analysis (Based on Run_Time_2025_05_02_15_53_10)
 
-- **訓練週期**: 共執行 27 個 Epochs (0-26)。
-- **準確率 (Accuracy)**:
-    - **訓練集**: 從 ~31.9% 提升至 ~94.4%。
-    - **驗證集**: 從 ~4.9% 開始，在第 7 個 epoch 達到 ~97.5%，最終穩定在 ~98.6%。
-- **損失值 (Loss)**:
-    - **訓練集**: 從 ~2.52 下降至 ~0.31。
-    - **驗證集**: 從 ~4.14 開始，在第 7 個 epoch 後穩定在 0.16-0.24 之間，最低約 0.167。
-- **學習率 (Learning Rate)**:
+- **Training Cycles**: 27 Epochs (0-26).
+- **Accuracy**:
+    - **Training Set**: Improved from ~31.9% to ~94.4%.
+    - **Validation Set**: Started at ~4.9%, reached ~97.5% at epoch 7, stabilized at ~98.6%.
+- **Loss**:
+    - **Training Set**: Decreased from ~2.52 to ~0.31.
+    - **Validation Set**: Started at ~4.14, stabilized between 0.16-0.24 after epoch 7, lowest at ~0.167.
+- **Learning Rate**:
     - Epoch 0-10: 0.001
-    - Epoch 11-17: 0.0005 (第一次降低)
-    - Epoch 18-24: 0.00025 (第二次降低)
-    - Epoch 25-26: 0.000125 (第三次降低)
+    - Epoch 11-17: 0.0005 (first reduction)
+    - Epoch 18-24: 0.00025 (second reduction)
+    - Epoch 25-26: 0.000125 (third reduction)
 
-#### 學習曲線摘要
+#### Learning Curve Summary
 
 | Epoch | Train Acc | Val Acc | Train Loss | Val Loss | Learning Rate |
 | :---- | :-------- | :------ | :--------- | :------- | :------------ |
@@ -116,89 +116,89 @@ captcha/
 | 25    | 0.941     | 0.986   | 0.326      | 0.167    | 0.000125      |
 | 26    | 0.944     | 0.986   | 0.314      | 0.173    | 0.000125      |
 
-- **結論**: 模型訓練效果良好，驗證集準確率高且穩定，學習率調整策略有效，無明顯過擬合現象。最佳模型出現在第 25 或 26 個 epoch。
+- **Conclusion**: The model performs well, with high and stable validation accuracy. The learning rate adjustment strategy is effective, and there is no significant overfitting. The best model appears at epoch 25 or 26.
 
 ---
 
-## 預測流程
+## Prediction Process
 
-1.  **載入模型**: 載入 `spas_cnn_model_tf2_v3_final.h5`。
-2.  **圖片預處理**:
-    - 讀取圖片 (`load_img`)。
-    - 轉換為 NumPy 陣列 (`img_to_array`)。
-    - 檢查尺寸，若不符 `(img_rows, img_cols)` 則使用 `cv2.resize` 調整。
-    - 確保為灰階單通道。
-3.  **分割字元**: 使用 `split_digits_in_img` 將預處理後的圖片分割成 4 個字元子圖，並正規化。
-4.  **模型預測**:
-    - 對每個字元子圖進行 `model.predict`。
-    - 使用 `np.argmax` 找到最高機率的類別索引。
-    - 使用 `reverse_list` 將索引轉換回對應的字元。
-5.  **結果輸出**: 打印每個字元的信心度（Softmax 輸出）和預測類別，最後組合輸出預測的驗證碼字串。
-
----
-
-## UML 溝通圖
-
-下圖（CAPTCHA_CNN.png）為本專案「批次驗證碼預測」流程的 UML 溝通圖，視覺化展示了主要物件間的互動關係：
-
-- **使用者** 觸發 `spas_cnn_model_tf2.py` 執行批次預測。
-- 主程式載入已訓練模型，並取得 `test_captcha/` 目錄下所有待預測圖片。
-- 每張圖片會經過預處理（灰階、裁切、縮放），再送入模型進行預測。
-- 預測結果（每個字元的信心度與最終驗證碼字串）會彙整並輸出給使用者。
-
-![CAPTCHA_CNN UML 溝通圖](CAPTCHA_CNN.png)
-
-此圖有助於理解專案在批次預測時，程式各模組與物件的協作流程。
+1.  **Load Model**: Load `spas_cnn_model_tf2_v3_final.h5`.
+2.  **Image Preprocessing**:
+    - Read image (`load_img`).
+    - Convert to NumPy array (`img_to_array`).
+    - Resize using `cv2.resize` if dimensions do not match `(img_rows, img_cols)`.
+    - Ensure grayscale single channel.
+3.  **Character Segmentation**: Use `split_digits_in_img` to split the preprocessed image into 4 character sub-images and normalize them.
+4.  **Model Prediction**:
+    - Predict each character sub-image using `model.predict`.
+    - Use `np.argmax` to find the class index with the highest probability.
+    - Convert index back to corresponding character using `reverse_list`.
+5.  **Output Results**: Print confidence level (Softmax output) and predicted class for each character, then combine and output the predicted CAPTCHA string.
 
 ---
 
-## 如何使用
+## UML Communication Diagram
 
-### 1. 準備環境與資料
+The following diagram (CAPTCHA_CNN.png) is the UML communication diagram for the project's "Batch CAPTCHA Prediction" process, visualizing the interaction between main objects:
 
-- 安裝依賴套件 (見下一節)。
-- 將訓練圖片放入 `label_captcha_tool-master/captcha/`。
-- 將訓練標籤放入 `label_captcha_tool-master/label.csv` (需與圖片檔名排序對應)。
-- 將待預測的圖片放入 `test_captcha/` (批次預測) 或其他指定路徑 (單張預測)。
+- **User** triggers `spas_cnn_model_tf2.py` to execute batch prediction.
+- The main program loads the trained model and retrieves all images to be predicted from the `test_captcha/` directory.
+- Each image undergoes preprocessing (grayscale, cropping, scaling) before being sent to the model for prediction.
+- Prediction results (confidence level for each character and final CAPTCHA string) are compiled and output to the user.
 
-### 2. 訓練模型
+![CAPTCHA_CNN UML Communication Diagram](CAPTCHA_CNN.png)
 
-在終端機中執行：
+This diagram helps understand the collaboration between program modules and objects during batch prediction.
+
+---
+
+## How to Use
+
+### 1. Prepare Environment and Data
+
+- Install dependencies (see next section).
+- Place training images in `label_captcha_tool-master/captcha/`.
+- Place training labels in `label_captcha_tool-master/label.csv` (must correspond to image filenames in order).
+- Place images to be predicted in `test_captcha/` (for batch prediction) or other specified paths (for single image prediction).
+
+### 2. Train Model
+
+Run the following command in the terminal:
 
 ```bash
 python spas_train_tf2.py
 ```
 
-訓練完成後，最佳模型將儲存為 spas_cnn_model_tf2_v3_final.h5。
+After training, the best model will be saved as spas_cnn_model_tf2_v3_final.h5.
 
-### 3. 批次預測圖片
+### 3. Batch Predict Images
 
-修改 spas_cnn_model_tf2.py 的 `if __name__ == '__main__':` 區塊：
+Modify the `if __name__ == '__main__':` block in spas_cnn_model_tf2.py:
 
 ```python
 if __name__ == '__main__':
-    # 確保 processBatchImg() 或其他預處理函數已將圖片放入 test_captcha
+    # Ensure processBatchImg() or other preprocessing functions have placed images in test_captcha
     cnn_model_batch_predict()
 ```
 
-然後在終端機中執行：
+Then run the following command in the terminal:
 
 ```bash
 python spas_cnn_model_tf2.py
 ```
 
-### 4. 單張圖片預測
+### 4. Predict Single Image
 
-修改 spas_cnn_model_tf2.py 的 `if __name__ == '__main__':` 區塊：
+Modify the `if __name__ == '__main__':` block in spas_cnn_model_tf2.py:
 
 ```python
 if __name__ == '__main__':
-    img_filename = r'getKaptchaImg/getKaptchaImg1400.jpeg' # 原始圖片路徑
-    predict_img = r'test_captcha/processed_captcha.jpg' # 預處理後圖片儲存路徑
-    captcha_code(img_filename, predict_img) # 會先調用 processImg 處理圖片
+    img_filename = r'getKaptchaImg/getKaptchaImg1400.jpeg' # Path to original image
+    predict_img = r'test_captcha/processed_captcha.jpg' # Path to save preprocessed image
+    captcha_code(img_filename, predict_img) # Calls processImg to preprocess the image
 ```
 
-然後在終端機中執行：
+Then run the following command in the terminal:
 
 ```bash
 python spas_cnn_model_tf2.py
@@ -206,14 +206,14 @@ python spas_cnn_model_tf2.py
 
 ---
 
-## 依賴套件
+## Dependencies
 
 - numpy
 - opencv-python
 - tensorflow
 - scikit-learn
 
-使用 pip 安裝：
+Install using pip:
 
 ```bash
 pip install numpy opencv-python tensorflow scikit-learn
@@ -221,25 +221,25 @@ pip install numpy opencv-python tensorflow scikit-learn
 
 ---
 
-## 常見問題
+## Frequently Asked Questions
 
-### Q1: 預測時出現 `Compiled the loaded model, but the compiled metrics have yet to be built` 警告？
+### Q1: Warning `Compiled the loaded model, but the compiled metrics have yet to be built` during prediction?
 
-**A:** 這是因為載入模型後直接進行預測，沒有執行 `compile`。雖然不影響預測，但程式中已加入 `model.compile(...)` 來消除此警告。
+**A:** This occurs because the model is loaded and used for prediction without `compile`. It does not affect prediction, but `model.compile(...)` has been added to the code to remove this warning.
 
-### Q2: 訓練或預測時出現 `Could not identify NUMA node` 訊息？
+### Q2: Message `Could not identify NUMA node` during training or prediction?
 
-**A:** 這是 TensorFlow 在 Mac 上使用 GPU 時的資訊訊息，提示不支援 NUMA 架構，不影響功能，可以忽略。
+**A:** This is an informational message from TensorFlow when using GPU on Mac, indicating no support for NUMA architecture. It does not affect functionality and can be ignored.
 
-### Q3: 如何更改驗證碼的字元集或長度？
+### Q3: How to change the character set or length of the CAPTCHA?
 
 **A:**
-- **字元集**: 修改 spas_train_tf2.py 和 spas_cnn_model_tf2.py 中的 `dict_captcha` 字典，並確保訓練標籤與之一致。同時需要調整模型最後 Dense 層的輸出單元數量 (目前是 21)。
-- **長度**: 修改 spas_train_tf2.py 和 spas_cnn_model_tf2.py 中的 `digits_in_img` 變數。這會影響圖片分割和預測循環次數。
+- **Character Set**: Modify the `dict_captcha` dictionary in spas_train_tf2.py and spas_cnn_model_tf2.py, and ensure training labels match it. Adjust the output units of the final Dense layer in the model (currently 21).
+- **Length**: Modify the `digits_in_img` variable in spas_train_tf2.py and spas_cnn_model_tf2.py. This affects image segmentation and prediction loop count.
 
 ---
 
-## 聯絡與貢獻
+## Contact and Contribution
 
-如有問題或建議，歡迎提出 Issue 或 Pull Request。
+For questions or suggestions, feel free to open an Issue or Pull Request.
 `````
